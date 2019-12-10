@@ -50,40 +50,23 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/joker1007/gradle-avro-plugin")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USER")
+                password = project.findProperty("gpr.token") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+
     publications {
-        mainMaven(MavenPublication) {
+        gpr(MavenPublication) {
             from components.java
-            artifact sourcesJar
-            artifact javadocJar
         }
     }
 }
-
-bintray {
-    // dryRun = true
-    // publish = true
-    user = project.hasProperty("bintrayUserName") ? bintrayUserName : null
-    key = project.hasProperty("bintrayApiKey") ? bintrayApiKey : null
-    publications = ["mainMaven", "avroBasePluginMarkerMaven", "avroPluginMarkerMaven"]
-    pkg {
-        repo = "main"
-        name = project.name
-        userOrg = "commercehub-oss"
-        licenses = ["Apache-2.0"]
-        desc = "A Gradle plugin to allow easily performing Java code generation for Apache Avro. It supports JSON schema declaration files, JSON protocol declaration files, and Avro IDL files."
-        websiteUrl = "https://github.com/davidmc24/gradle-avro-plugin"
-        issueTrackerUrl = 'https://github.com/davidmc24/gradle-avro-plugin/issues'
-        vcsUrl = "https://github.com/davidmc24/gradle-avro-plugin"
-        labels = ["serialization", "avro"]
-        githubRepo = "davidmc24/gradle-avro-plugin"
-        version {
-            name = project.version
-            vcsTag = project.version
-        }
-    }
-}
-
-bintrayUpload.dependsOn build, { generatePomFileForAvroBasePluginMarkerMavenPublication }, { generatePomFileForAvroPluginMarkerMavenPublication }
 
 gradlePlugin {
     plugins {
